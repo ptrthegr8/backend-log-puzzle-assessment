@@ -14,6 +14,7 @@ Given an apache logfile, find the puzzle urls and download the images.
 Here's what a puzzle url looks like:
 10.254.254.28 - - [06/Aug/2007:00:13:48 -0700] "GET /~foo/puzzle-bar-aaab.jpg HTTP/1.0" 302 528 "-" "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.6) Gecko/20070725 Firefox/2.0.0.6" 
 # noqa
+# ^ Added above line because line 15 needs to stay intact to make sense
 """
 
 import os
@@ -24,6 +25,9 @@ import argparse
 
 
 def sort_urls(url):
+    """Function used as key when sorted.
+    Sorts by second group of matches in ()'s.
+    Returns list of targeted words if match or url if no match."""
     match = re.search(r'puzzle/\w+-(\w+)-(\w+)\.\w+', url)
     return match.group(2) if match else url
 
