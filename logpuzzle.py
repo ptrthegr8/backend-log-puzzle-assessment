@@ -23,13 +23,24 @@ import urllib
 import argparse
 
 
+def sort_urls(url):
+    match = re.search(r'puzzle/\w+-(\w+)-(\w+)\.\w+', url)
+    return match.group(2) if match else url
+
+
 def read_urls(filename):
     """Returns a list of the puzzle urls from the given log file,
     extracting the hostname from the filename itself.
     Screens out duplicate urls and returns the urls sorted into
     increasing order."""
-    # +++your code here+++
-    pass
+    underscore = filename.find('_')
+    hostname = filename[underscore + 1:]
+    with open(filename, 'r') as f:
+        text = f.read()
+        f.close()
+        partial_paths = re.findall(r'[/]edu\S+\.\w+', text)
+        full_paths = map(lambda x: 'http://' + hostname + x, partial_paths)
+    return sorted(list(set(full_paths)), key=sort_urls)
 
 
 def download_images(img_urls, dest_dir):
@@ -40,14 +51,26 @@ def download_images(img_urls, dest_dir):
     with an img tag to show each local image file.
     Creates the directory if necessary.
     """
-    # +++your code here+++
-    pass
+    if not os.path.exists(dest_dir):
+        os.makedirs(dest_dir)
+    with open(os.path.join(dest_dir, 'index.html'), 'w+') as f:
+        f.write('<html><body>')
+
+        index = 0
+        for img_url in img_urls:
+            new_name = 'img{}'.format(index)
+            urllib.urlretrieve(img_url, os.path.join(dest_dir, new_name))
+            f.write('<img src={}>'.format(new_name))
+            index += 1
+        f.write('</body></html>')
+        f.close()
 
 
 def create_parser():
     """Create an argument parser object"""
     parser = argparse.ArgumentParser()
-    parser.add_argument('-d', '--todir',  help='destination directory for downloaded images')
+    parser.add_argument(
+        '-d', '--todir',  help='destination directory for downloaded images')
     parser.add_argument('logfile', help='apache logfile to extract urls from')
 
     return parser
